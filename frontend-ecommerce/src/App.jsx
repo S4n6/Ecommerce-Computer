@@ -16,6 +16,7 @@ import AdminLayout from './components/AdminLayout.jsx'
 import Login from './pages/Login.jsx'
 import PCBuilder from './pages/PCBuilder.jsx'
 import Shop from './pages/Shop.jsx'
+import MyOrders from './pages/MyOrders.jsx'
 import OrderList from './pages/admin/OrderList.jsx'
 import ProductList from './pages/admin/ProductList.jsx'
 import CustomerList from './pages/admin/CustomerList.jsx'
@@ -27,6 +28,7 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Shop />} />
         <Route path="/build" element={<PCBuilder />} />
+        <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/pc-builder" element={<Navigate to="/build" replace />} />
       </Route>
 
@@ -161,6 +163,17 @@ function PublicLayout() {
               >
                 PC Builder
               </Button>
+
+              {isLoggedIn && (
+                <Button
+                  component={RouterLink}
+                  to="/my-orders"
+                  variant={location.pathname === '/my-orders' ? 'contained' : 'text'}
+                  sx={{ px: 2 }}
+                >
+                  My Orders
+                </Button>
+              )}
 
               {isAdmin && (
                 <Button

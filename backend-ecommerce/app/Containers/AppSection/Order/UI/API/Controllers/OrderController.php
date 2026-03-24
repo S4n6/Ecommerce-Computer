@@ -2,7 +2,10 @@
 
 namespace App\Containers\AppSection\Order\UI\API\Controllers;
 
+use App\Containers\AppSection\Order\Actions\CancelMyOrderAction;
+use App\Containers\AppSection\Order\Actions\GetMyOrdersAction;
 use App\Containers\AppSection\Order\Actions\PlaceOrderAction;
+use App\Containers\AppSection\Order\Models\Order;
 use App\Containers\AppSection\Order\UI\API\Requests\PlaceOrderRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -62,5 +65,60 @@ class OrderController extends Controller
                 ]),
             ],
         ], 201);
+    }
+
+    // ----------------------------------------------------------------
+    // GET /api/v1/my-orders
+    // ----------------------------------------------------------------
+
+    /**
+     * Get all orders for the authenticated customer.
+     *
+     * Returns orders ordered by latest first, with items and products eager loaded.
+     */
+    public function myOrders(GetMyOrdersAction $action): JsonResponse
+    {
+        $orders = $action->run((int) auth()->id());
+
+        return response()->json([
+            'data' => $orders->map(fn (Order $order) => $this->transformOrder($order)),
+        ]);
+    }
+
+    // ----------------------------------------------------------------
+    // PATCH /api/v1/my-orders/{id}/cancel
+    // ----------------------------------------------------------------
+
+    /**
+     * Cancel a pending order belonging to the authenticated customer.
+     */
+    public function cancelMyOrder(int $id, CancelMyOrderAction $action): JsonResponse
+    {
+        $order = $action->run(orderId: $id, userId: (int) auth()->id());
+
+        return response()->json([
+            'message' => 'Order cancelled successfully.',
+            'data' => $this->transformOrder($order),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function transformOrder(Order $order): array
+    {
+        return [
+            'id' => $order->id,
+            'total_price' => $order->total_price,
+            'status' => $order->status,
+            'created_at' => $order->created_at,
+            'items' => $order->items->map(fn ($item) => [
+                'product_id' => $item->product_id,
+                'product_name' => $item->product->name,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->price,
+                'line_total' => round($item->price * $item->quantity, 2),
+            ]),
+        ];
     }
 }

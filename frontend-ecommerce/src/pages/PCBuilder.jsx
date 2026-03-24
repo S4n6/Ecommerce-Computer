@@ -349,7 +349,23 @@ export default function PCBuilder() {
 
   const handleSelectProduct = (product) => {
     setBuildContext((prev) => {
+      const prevSelected = prev[currentCategory]
+      const prevSelectedId = prevSelected?.id
+      const nextSelectedId = product?.id
+
+      if (prevSelectedId && nextSelectedId && prevSelectedId === nextSelectedId) {
+        return prev
+      }
+
       if (currentCategory === 'mainboard') {
+        if (
+          prev.mainboard?.id &&
+          product?.id &&
+          prev.mainboard.id === product.id
+        ) {
+          return prev
+        }
+
         return {
           ...prev,
           mainboard: product,
@@ -364,6 +380,25 @@ export default function PCBuilder() {
     })
 
     closeDialog()
+  }
+
+  const handleRemoveSelection = (categorySlug) => {
+    setBuildContext((prev) => {
+      if (!prev[categorySlug]) return prev
+
+      if (categorySlug === 'mainboard') {
+        return {
+          ...prev,
+          mainboard: null,
+          cpu: null,
+        }
+      }
+
+      return {
+        ...prev,
+        [categorySlug]: null,
+      }
+    })
   }
 
   const handlePlaceOrder = async () => {
@@ -547,18 +582,35 @@ export default function PCBuilder() {
                     </TableCell>
 
                     <TableCell align="right">
-                      <Button
-                        variant={selected ? 'outlined' : 'contained'}
-                        onClick={() => openCategoryDialog(category.slug)}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontWeight: 800,
-                          minWidth: 104,
-                        }}
-                      >
-                        {buttonLabel}
-                      </Button>
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Button
+                          variant={selected ? 'outlined' : 'contained'}
+                          onClick={() => openCategoryDialog(category.slug)}
+                          sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 800,
+                            minWidth: 104,
+                          }}
+                        >
+                          {buttonLabel}
+                        </Button>
+
+                        {selected && (
+                          <Button
+                            color="error"
+                            variant="text"
+                            onClick={() => handleRemoveSelection(category.slug)}
+                            sx={{
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              fontWeight: 800,
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 )

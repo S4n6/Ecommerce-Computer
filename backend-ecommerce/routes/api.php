@@ -120,6 +120,24 @@ Route::prefix('v1')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | My Orders Routes (Customer)
+    |--------------------------------------------------------------------------
+    | Customer self-service order management.
+    |
+    | GET   /api/v1/my-orders
+    | PATCH /api/v1/my-orders/{id}/cancel
+    */
+    Route::middleware('auth:api')->prefix('my-orders')->group(function () {
+        Route::get('/', [OrderController::class, 'myOrders'])
+            ->name('api.v1.my-orders.index');
+
+        Route::patch('/{id}/cancel', [OrderController::class, 'cancelMyOrder'])
+            ->whereNumber('id')
+            ->name('api.v1.my-orders.cancel');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin Routes
     |--------------------------------------------------------------------------
     | Protected by auth:api  (valid Passport token)        → verifies identity
